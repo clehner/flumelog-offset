@@ -188,7 +188,11 @@ module.exports = function (file, length, codec, cache) {
         blocks.read(_offset + 4, _offset + 4 + length, function (err, value) {
           if(value.length !== length) throw new Error('incorrect length, expected:'+length+', was:'+value.length)
             if(!value.length) return cb(new Error('empty buffer read at:'+_offset))
-            cb(err, codec.decode(value), length + 8)
+          if (err) return cb(err)
+          var data
+          try { data = codec.decode(value) }
+          catch(e) { return cb(e) }
+          cb(null, data, length + 8)
         })
       })
     },
@@ -202,7 +206,11 @@ module.exports = function (file, length, codec, cache) {
       blocks.readUInt32BE(_offset - 4, function (err, length) {
         if(err) return cb(err)
         blocks.read(_offset - 4 - length, _offset - 4, function (err, value) {
-          cb(err, codec.decode(value), length + 8)
+          if (err) return cb(err)
+          var data
+          try { data = codec.decode(value) }
+          catch(e) { return cb(e) }
+          cb(null, data, length + 8)
         })
       })
     },
